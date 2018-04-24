@@ -2,6 +2,8 @@ package connection;
 
 import beans.Employee;
 import beans.Enterprise;
+import beans.Speciality;
+import beans.Vacancy;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -105,6 +107,121 @@ public class DataBases {
 
     public static void removeEnterprise(int id) throws SQLException {
         PreparedStatement statement = getConnection().prepareStatement("DELETE FROM ENTERPRISE WHERE ID = ?");
+        statement.setInt(1, id);
+        statement.execute();
+        statement.close();
+    }
+
+    public static Enterprise getEnterprise(int id) throws SQLException {
+        PreparedStatement statement = getConnection().prepareStatement("SELECT * FROM ENTERPRISE WHERE ID = ?");
+        statement.setInt(1, id);
+        ResultSet resultSet = statement.executeQuery();
+        resultSet.next();
+
+        Enterprise enterprise = new Enterprise(
+                resultSet.getInt("ID"),
+                resultSet.getString("NAME"),
+                resultSet.getString("PHONE"));
+
+        statement.close();
+        resultSet.close();
+        return enterprise;
+    }
+
+    public static List<Speciality> getSpecialities() throws SQLException {
+        List<Speciality> specialities = new ArrayList<>();
+        Statement statement = getConnection().createStatement();
+        ResultSet resultSet = statement.executeQuery("SELECT * FROM SPECIALITY");
+        while (resultSet.next()) {
+            specialities.add(new Speciality(
+                    resultSet.getInt("ID"),
+                    resultSet.getString("NAME")
+            ));
+        }
+        statement.close();
+        resultSet.close();
+        return specialities;
+    }
+
+    public static Speciality getSpeciality(int id) throws SQLException {
+        PreparedStatement statement = getConnection().prepareStatement("SELECT * FROM SPECIALITY WHERE ID = ?");
+        statement.setInt(1, id);
+        ResultSet resultSet = statement.executeQuery();
+        resultSet.next();
+
+        Speciality speciality = new Speciality(
+                resultSet.getInt("ID"),
+                resultSet.getString("NAME")
+        );
+
+        statement.close();
+        resultSet.close();
+        return speciality;
+    }
+
+    public static void updateSpeciality(Speciality speciality) throws SQLException {
+        PreparedStatement statement = getConnection().prepareStatement("UPDATE SPECIALITY SET NAME = ? WHERE ID = ?");
+        statement.setString(1, speciality.getName());
+        statement.setInt(2, speciality.getId());
+        statement.executeUpdate();
+        statement.close();
+    }
+
+    public static void addSpeciality(Speciality speciality) throws SQLException {
+        PreparedStatement statement = getConnection().prepareStatement("INSERT INTO SPECIALITY VALUES (SPECIALITY_ID_SEQ.NEXTVAL, ?)");
+        statement.setString(1, speciality.getName());
+        statement.execute();
+        statement.close();
+    }
+
+    public static void removeSpeciality(int id) throws SQLException {
+        PreparedStatement statement = getConnection().prepareStatement("DELETE FROM SPECIALITY WHERE ID = ?");
+        statement.setInt(1, id);
+        statement.execute();
+        statement.close();
+    }
+
+    public static List<Vacancy> getVacancies() throws SQLException {
+        List<Vacancy> vacancies = new ArrayList<>();
+        Statement statement = getConnection().createStatement();
+        ResultSet resultSet = statement.executeQuery("SELECT * FROM VACANCY");
+        while (resultSet.next()) {
+            vacancies.add(new Vacancy(
+                    resultSet.getInt("ID"),
+                    resultSet.getInt("ENTERPRISE_ID"),
+                    resultSet.getInt("SPECIALITY_ID"),
+                    resultSet.getInt("EXPERIENCE"),
+                    resultSet.getInt("SALARY")
+            ));
+        }
+        statement.close();
+        resultSet.close();
+        return vacancies;
+    }
+
+    public static void updateVacancy(Vacancy vacancy) throws SQLException {
+        PreparedStatement statement = getConnection().prepareStatement("UPDATE VACANCY SET ENTERPRISE_ID = ?, SPECIALITY_ID = ?, EXPERIENCE = ?, SALARY = ? WHERE ID = ?");
+        statement.setInt(1, vacancy.getEnterpriseID());
+        statement.setInt(2, vacancy.getSpecialityID());
+        statement.setInt(3, vacancy.getExperience());
+        statement.setInt(4, vacancy.getSalary());
+        statement.setInt(5, vacancy.getId());
+        statement.executeUpdate();
+        statement.close();
+    }
+
+    public static void addVacancy(Vacancy vacancy) throws SQLException {
+        PreparedStatement statement = getConnection().prepareStatement("INSERT INTO VACANCY VALUES (VACANCY_ID_SEQ.NEXTVAL, ?, ?, ?, ?)");
+        statement.setInt(1, vacancy.getEnterpriseID());
+        statement.setInt(2, vacancy.getSpecialityID());
+        statement.setInt(3, vacancy.getExperience());
+        statement.setInt(4, vacancy.getSalary());
+        statement.execute();
+        statement.close();
+    }
+
+    public static void removeVacancy(int id) throws SQLException {
+        PreparedStatement statement = getConnection().prepareStatement("DELETE FROM VACANCY WHERE ID = ?");
         statement.setInt(1, id);
         statement.execute();
         statement.close();

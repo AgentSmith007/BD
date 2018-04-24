@@ -1,13 +1,13 @@
 package beans;
 
 public class Vacancy {
-    private int enterpriseID;
     private int id;
+    private int enterpriseID;
     private int salary;
     private int experience;
     private int specialityID;
 
-    public Vacancy(int enterpriseID, int id, int salary, int experience, int specialityID) {
+    public Vacancy(int id, int enterpriseID, int specialityID, int experience, int salary) {
         this.enterpriseID = enterpriseID;
         this.id = id;
         this.salary = salary;
