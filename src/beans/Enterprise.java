@@ -3,9 +3,9 @@ package beans;
 public class Enterprise {
     private int id;
     private String name;
-    private int phone;
+    private String phone;
 
-    public Enterprise(int id, String name, int phone) {
+    public Enterprise(int id, String name, String phone) {
         this.id = id;
         this.name = name;
         this.phone = phone;
@@ -19,7 +19,7 @@ public class Enterprise {
         return name;
     }
 
-    public int getPhone() {
+    public String getPhone() {
         return phone;
     }
 
@@ -31,7 +31,7 @@ public class Enterprise {
         this.name = name;
     }
 
-    public void setPhone(int phone) {
+    public void setPhone(String phone) {
         this.phone = phone;
     }
 }
