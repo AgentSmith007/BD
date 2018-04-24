@@ -546,24 +546,3 @@ INSERT INTO vacancy VALUES (
 );
 
 COMMIT;
-
-CREATE OR REPLACE PROCEDURE add_new_employee (
-    fio_em        VARCHAR2,
-    phone_em      NUMBER,
-    email_em      VARCHAR2,
-    age_em        NUMBER,
-    nameuser_em   VARCHAR2
-)
-    IS
-BEGIN
-    INSERT INTO employee VALUES (
-        id_emp_seq.NEXTVAL,
-        fio_em,
-        phone_em,
-        email_em,
-        age_em,
-        nameuser_em
-    );
-
-    COMMIT;
-END;
