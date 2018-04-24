@@ -18,8 +18,8 @@ ALTER TABLE enterprise ADD CONSTRAINT enterprise_pk PRIMARY KEY ( id );
 
 CREATE TABLE resume (
     id              NUMBER NOT NULL,
-    speciality_id   NUMBER NOT NULL,
     employee_id     NUMBER NOT NULL,
+    speciality_id   NUMBER NOT NULL,
     data            DATE
 );
 
