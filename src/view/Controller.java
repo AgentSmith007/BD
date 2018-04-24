@@ -1,6 +1,7 @@
 package view;
 
 import beans.Employee;
+import beans.Enterprise;
 import connection.DataBases;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -17,20 +18,29 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-public class EmployeeListController {
+public class Controller {
 
     @FXML
     private TableView<Employee> employeeTableView;
     @FXML
-    private Button deleteEmployeeButton;
-    @FXML
     private Button addEmployeeButton;
+    @FXML
+    private Button deleteEmployeeButton;
+
+    @FXML
+    private TableView<Enterprise> enterpriseTableView;
+    @FXML
+    private Button addEnterpriseButton;
+    @FXML
+    private Button deleteEnterpriseButton;
 
     public void initialize() {
 
         try {
             initializeEmployeeTable();
             initializeEmployeeButtons();
+            initializeEnterPriseTable();
+            initializeEnterpriseButtons();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -133,7 +143,11 @@ public class EmployeeListController {
             result.ifPresent(list -> {
                 try {
                     DataBases.addEmployee(result.get());
-                    employeeTableView.getItems().add(result.get());
+
+                    List<Employee> employeeList = DataBases.getEmployees();
+                    ObservableList<Employee> observableList = FXCollections.observableList(employeeList);
+                    employeeTableView.setItems(observableList);
+
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -221,6 +235,135 @@ public class EmployeeListController {
                     return null;
                 }
             }
+            else return null;
+        });
+        return dialog;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initializeEnterPriseTable() throws SQLException {
+        TableColumn<Enterprise, String> nameColumn = new TableColumn<>("Название");
+        TableColumn<Enterprise, String> phoneColumn = new TableColumn<>("Номер телефона");
+
+        // Defines how to fill data for each cell.
+        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        nameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        nameColumn.setMinWidth(355);
+        nameColumn.setOnEditCommit((TableColumn.CellEditEvent<Enterprise, String> event) -> {
+
+            TablePosition<Enterprise, String> position = event.getTablePosition();
+            Enterprise enterprise = event.getTableView().getItems().get(position.getRow());
+
+            String newName = event.getNewValue();
+            enterprise.setName(newName);
+            try {
+                DataBases.updateEnterprise(enterprise);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+
+        phoneColumn.setCellValueFactory(new PropertyValueFactory<>("phone"));
+        phoneColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        phoneColumn.setMinWidth(355);
+        phoneColumn.setOnEditCommit((TableColumn.CellEditEvent<Enterprise, String> event) -> {
+
+            TablePosition<Enterprise, String> position = event.getTablePosition();
+            Enterprise enterprise = event.getTableView().getItems().get(position.getRow());
+
+            String newNumber = event.getNewValue();
+            enterprise.setPhone(newNumber);
+            try {
+                DataBases.updateEnterprise(enterprise);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+
+        // Display row data
+        List<Enterprise> enterpriseList = DataBases.getEnterprises();
+        ObservableList<Enterprise> observableList = FXCollections.observableList(enterpriseList);
+        enterpriseTableView.setItems(observableList);
+        enterpriseTableView.getColumns().addAll(nameColumn, phoneColumn);
+        enterpriseTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+    }
+
+    private void initializeEnterpriseButtons() {
+        addEnterpriseButton.setOnAction(actionEvent -> {
+            Optional<Enterprise> result = getAddEnterpriseDialog().showAndWait();
+            result.ifPresent(list -> {
+                try {
+                    DataBases.addEnterprise(result.get());
+
+                    List<Enterprise> enterpriseList = DataBases.getEnterprises();
+                    ObservableList<Enterprise> observableList = FXCollections.observableList(enterpriseList);
+                    enterpriseTableView.setItems(observableList);
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            });
+        });
+
+        deleteEnterpriseButton.setOnAction(actionEvent -> {
+            int row = enterpriseTableView.getSelectionModel().getSelectedIndex();
+            if (row != -1) {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Подтверждение");
+                alert.setHeaderText("Удалить предприятие?");
+                alert.setContentText("Предприятие будет безвозвратно удалено.");
+
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.get() == ButtonType.OK){
+                    try {
+                        DataBases.removeEnterprise(enterpriseTableView.getItems().get(row).getId());
+                        enterpriseTableView.getItems().remove(row);
+                    } catch (SQLException e) {
+                        if (e.getErrorCode() == 2292) {
+                            alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setTitle("Ошибка");
+                            alert.setHeaderText("Ошибка удаления предприятия");
+                            alert.setContentText("Невозможно удалить предприятие, связанное с существующей вакансией.");
+                            alert.showAndWait();
+                        } else e.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
+    private Dialog<Enterprise> getAddEnterpriseDialog() {
+        Dialog<Enterprise> dialog = new Dialog<>();
+        dialog.setTitle("Добавление предприятия");
+        dialog.setHeaderText("Заполните информацию о предприятии");
+
+        ButtonType confirmButton = new ButtonType("Добавить", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButton = new ButtonType("Отмена", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(confirmButton, cancelButton);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 100, 10, 10));
+
+        TextField nameField = new TextField();
+        TextField phoneField = new TextField();
+        nameField.setPromptText("Название");
+        phoneField.setPromptText("Номер телефона");
+
+        grid.add(new Label("ФИО:"), 0, 0);
+        grid.add(new Label("Телефон:"), 0, 1);
+        grid.add(nameField, 1, 0);
+        grid.add(phoneField, 1, 1);
+        Node loginButton = dialog.getDialogPane().lookupButton(confirmButton);
+        loginButton.setDisable(true);
+
+        nameField.textProperty().addListener((observable, oldValue, newValue) -> loginButton.setDisable(newValue.trim().isEmpty()));
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == confirmButton)
+                    return new Enterprise(-1, nameField.getText(), phoneField.getText());
             else return null;
         });
         return dialog;

@@ -6,7 +6,7 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="462.0" prefWidth="712.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="view.EmployeeListController">
+<AnchorPane prefHeight="462.0" prefWidth="712.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="view.Controller">
    <TabPane prefHeight="474.0" prefWidth="712.0" tabClosingPolicy="UNAVAILABLE">
      <tabs>
        <Tab text="Сотрудники">
@@ -22,8 +22,13 @@
        </Tab>
        <Tab text="Предприятия">
          <content>
-           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-         </content>
+             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="443.0" prefWidth="712.0">
+                 <children>
+                     <TableView fx:id="enterpriseTableView" editable="true" prefHeight="410.0" prefWidth="712.0" />
+                     <Button fx:id="addEnterpriseButton" layoutX="14.0" layoutY="420.0" mnemonicParsing="false" text="Добавить предприятие" />
+                     <Button fx:id="deleteEnterpriseButton" layoutX="160.0" layoutY="420.0" mnemonicParsing="false" text="Удалить предприятие" />
+                 </children>
+             </AnchorPane>         </content>
        </Tab>
      </tabs>
    </TabPane>
