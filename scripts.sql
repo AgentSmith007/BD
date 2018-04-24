@@ -544,5 +544,4 @@ INSERT INTO vacancy VALUES (
     2,
     1
 );
-
 COMMIT;
