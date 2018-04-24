@@ -8,7 +8,7 @@ public class Resume {
     private int resumeID;
     private Date date;
 
-    public Resume(int specialityID, int employeeID, int resumeID, Date date) {
+    public Resume(int resumeID, int employeeID, int specialityID, Date date) {
         this.specialityID = specialityID;
         this.employeeID = employeeID;
         this.resumeID = resumeID;

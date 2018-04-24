@@ -1,11 +1,11 @@
 package view;
 
-import beans.Employee;
-import beans.Enterprise;
-import beans.Speciality;
-import beans.Vacancy;
+import beans.*;
 import connection.DataBases;
+import javafx.beans.property.ReadOnlyIntegerWrapper;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -16,6 +16,7 @@ import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.GridPane;
+import javafx.util.Callback;
 import javafx.util.converter.IntegerStringConverter;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -53,6 +54,13 @@ public class Controller {
     @FXML
     private Button deleteVacancyButton;
 
+    @FXML
+    private TableView<Resume> resumeTableView;
+    @FXML
+    private Button addResumeButton;
+    @FXML
+    private Button deleteResumeButton;
+
     public void initialize() {
 
         try {
@@ -75,10 +83,17 @@ public class Controller {
 
     @SuppressWarnings("unchecked")
     private void initializeEmployeeTable() throws SQLException {
+        TableColumn<Employee, Integer> indexColumn = new TableColumn<>("№");
         TableColumn<Employee, String> fioColumn = new TableColumn<>("ФИО");
         TableColumn<Employee, String> phoneColumn = new TableColumn<>("Номер телефона");
         TableColumn<Employee, String> emailColumn = new TableColumn<>("E-mail");
         TableColumn<Employee, Integer> ageColumn = new TableColumn<>("Возраст");
+
+        indexColumn.setCellValueFactory(column-> new ReadOnlyObjectWrapper<>(employeeTableView.getItems().indexOf(column.getValue()) + 1));
+        indexColumn.setSortable(false);
+        indexColumn.setResizable(false);
+        indexColumn.setMinWidth(30);
+        indexColumn.setMaxWidth(30);
 
         // Defines how to fill data for each cell.
         fioColumn.setCellValueFactory(new PropertyValueFactory<>("fio"));
@@ -160,7 +175,7 @@ public class Controller {
         List<Employee> employeeList = DataBases.getEmployees();
         ObservableList<Employee> observableList = FXCollections.observableList(employeeList);
         employeeTableView.setItems(observableList);
-        employeeTableView.getColumns().addAll(fioColumn, phoneColumn, emailColumn, ageColumn);
+        employeeTableView.getColumns().addAll(indexColumn, fioColumn, phoneColumn, emailColumn, ageColumn);
         employeeTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     }
 
@@ -267,13 +282,20 @@ public class Controller {
 
     @SuppressWarnings("unchecked")
     private void initializeEnterpriseTable() throws SQLException {
+        TableColumn<Enterprise, Integer> indexColumn = new TableColumn<>("№");
         TableColumn<Enterprise, String> nameColumn = new TableColumn<>("Название");
         TableColumn<Enterprise, String> phoneColumn = new TableColumn<>("Номер телефона");
+
+        indexColumn.setCellValueFactory(column-> new ReadOnlyObjectWrapper<>(enterpriseTableView.getItems().indexOf(column.getValue()) + 1));
+        indexColumn.setSortable(false);
+        indexColumn.setResizable(false);
+        indexColumn.setMinWidth(30);
+        indexColumn.setMaxWidth(30);
 
         // Defines how to fill data for each cell.
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         nameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        nameColumn.setMinWidth(355);
+        nameColumn.setMinWidth(200);
         nameColumn.setOnEditCommit((TableColumn.CellEditEvent<Enterprise, String> event) -> {
 
             TablePosition<Enterprise, String> position = event.getTablePosition();
@@ -290,7 +312,7 @@ public class Controller {
 
         phoneColumn.setCellValueFactory(new PropertyValueFactory<>("phone"));
         phoneColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        phoneColumn.setMinWidth(355);
+        phoneColumn.setMinWidth(200);
         phoneColumn.setOnEditCommit((TableColumn.CellEditEvent<Enterprise, String> event) -> {
 
             TablePosition<Enterprise, String> position = event.getTablePosition();
@@ -309,7 +331,7 @@ public class Controller {
         List<Enterprise> enterpriseList = DataBases.getEnterprises();
         ObservableList<Enterprise> observableList = FXCollections.observableList(enterpriseList);
         enterpriseTableView.setItems(observableList);
-        enterpriseTableView.getColumns().addAll(nameColumn, phoneColumn);
+        enterpriseTableView.getColumns().addAll(indexColumn, nameColumn, phoneColumn);
         enterpriseTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     }
 
@@ -396,12 +418,19 @@ public class Controller {
 
     @SuppressWarnings("unchecked")
     private void initializeSpecialityTable() throws SQLException {
+        TableColumn<Speciality, Integer> indexColumn = new TableColumn<>("№");
         TableColumn<Speciality, String> nameColumn = new TableColumn<>("Название");
+
+        indexColumn.setCellValueFactory(column-> new ReadOnlyObjectWrapper<>(specialityTableView.getItems().indexOf(column.getValue()) + 1));
+        indexColumn.setSortable(false);
+        indexColumn.setResizable(false);
+        indexColumn.setMinWidth(30);
+        indexColumn.setMaxWidth(30);
 
         // Defines how to fill data for each cell.
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         nameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        nameColumn.setMinWidth(710);
+        nameColumn.setMinWidth(200);
         nameColumn.setOnEditCommit((TableColumn.CellEditEvent<Speciality, String> event) -> {
 
             TablePosition<Speciality, String> position = event.getTablePosition();
@@ -419,7 +448,7 @@ public class Controller {
         List<Speciality> specialityList = DataBases.getSpecialities();
         ObservableList<Speciality> observableList = FXCollections.observableList(specialityList);
         specialityTableView.setItems(observableList);
-        specialityTableView.getColumns().addAll(nameColumn);
+        specialityTableView.getColumns().addAll(indexColumn, nameColumn);
         specialityTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     }
 
@@ -503,10 +532,17 @@ public class Controller {
 
     @SuppressWarnings("unchecked")
     private void initializeVacancyTable() throws SQLException {
+        TableColumn<Vacancy, Integer> indexColumn = new TableColumn<>("№");
         TableColumn<Vacancy, Enterprise> enterpriseColumn = new TableColumn<>("Предприятие");
         TableColumn<Vacancy, Speciality> specialityColumn = new TableColumn<>("Специальность");
         TableColumn<Vacancy, Integer> experienceColumn = new TableColumn<>("Требуемый опыт");
         TableColumn<Vacancy, Integer> salaryColumn = new TableColumn<>("Зарплата");
+
+        indexColumn.setCellValueFactory(column-> new ReadOnlyObjectWrapper<>(vacancyTableView.getItems().indexOf(column.getValue()) + 1));
+        indexColumn.setSortable(false);
+        indexColumn.setResizable(false);
+        indexColumn.setMinWidth(30);
+        indexColumn.setMaxWidth(30);
 
         enterpriseColumn.setCellValueFactory(param -> {
             try {
@@ -611,7 +647,7 @@ public class Controller {
         List<Vacancy> vacancyList = DataBases.getVacancies();
         ObservableList<Vacancy> observableList = FXCollections.observableList(vacancyList);
         vacancyTableView.setItems(observableList);
-        vacancyTableView.getColumns().addAll(enterpriseColumn, specialityColumn, experienceColumn, salaryColumn);
+        vacancyTableView.getColumns().addAll(indexColumn, enterpriseColumn, specialityColumn, experienceColumn, salaryColumn);
         vacancyTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     }
 
