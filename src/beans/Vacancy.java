@@ -27,10 +27,6 @@ public class Vacancy {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public int getSalary() {
         return salary;
     }

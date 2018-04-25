@@ -5,7 +5,6 @@ import connection.DataBases;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
@@ -17,7 +16,6 @@ import javafx.util.converter.IntegerStringConverter;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 
 public class Controller {
@@ -420,7 +418,6 @@ public class Controller {
                 try {
                     DataBases.addVacancy(result.get());
                     vacancyTableView.setItems(FXCollections.observableList(DataBases.getVacancies()));
-
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -448,7 +445,7 @@ public class Controller {
 
     @SuppressWarnings("unchecked")
     private void initializeResumeTable() throws SQLException {
-        TableColumn<Resume, Employee> employeeColumn = new TableColumn<>("Сотрудник");
+        TableColumn<Resume, Employee> employeeColumn = new TableColumn<>("Претендент");
         TableColumn<Resume, Speciality> specialityColumn = new TableColumn<>("Специальность");
         TableColumn<Resume, Integer> experienceColumn = new TableColumn<>("Опыт работы");
         TableColumn<Resume, Date> dateColumn = new TableColumn<>("Дата создания");
