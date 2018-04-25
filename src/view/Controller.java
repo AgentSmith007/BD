@@ -2,79 +2,68 @@ package view;
 
 import beans.*;
 import connection.DataBases;
-import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.GridPane;
-import javafx.util.Callback;
+import javafx.util.converter.DateStringConverter;
 import javafx.util.converter.IntegerStringConverter;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 public class Controller {
-
     @FXML
     private TableView<Employee> employeeTableView;
+    @FXML
+    private TableView<Enterprise> enterpriseTableView;
+    @FXML
+    private TableView<Speciality> specialityTableView;
+    @FXML
+    private TableView<Vacancy> vacancyTableView;
+    @FXML
+    private TableView<Resume> resumeTableView;
     @FXML
     private Button addEmployeeButton;
     @FXML
     private Button deleteEmployeeButton;
-
-    @FXML
-    private TableView<Enterprise> enterpriseTableView;
     @FXML
     private Button addEnterpriseButton;
     @FXML
     private Button deleteEnterpriseButton;
-
-    @FXML
-    private TableView<Speciality> specialityTableView;
     @FXML
     private Button addSpecialityButton;
     @FXML
     private Button deleteSpecialityButton;
-
-    @FXML
-    private TableView<Vacancy> vacancyTableView;
     @FXML
     private Button addVacancyButton;
     @FXML
     private Button deleteVacancyButton;
-
-    @FXML
-    private TableView<Resume> resumeTableView;
     @FXML
     private Button addResumeButton;
     @FXML
     private Button deleteResumeButton;
 
     public void initialize() {
-
         try {
             initializeEmployeeTable();
             initializeEmployeeButtons();
-
             initializeEnterpriseTable();
             initializeEnterpriseButtons();
-
             initializeSpecialityTable();
             initializeSpecialityButtons();
-
             initializeVacancyTable();
             initializeVacancyButtons();
+            initializeResumeTable();
+            initializeResumeButtons();
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -83,17 +72,10 @@ public class Controller {
 
     @SuppressWarnings("unchecked")
     private void initializeEmployeeTable() throws SQLException {
-        TableColumn<Employee, Integer> indexColumn = new TableColumn<>("№");
         TableColumn<Employee, String> fioColumn = new TableColumn<>("ФИО");
         TableColumn<Employee, String> phoneColumn = new TableColumn<>("Номер телефона");
         TableColumn<Employee, String> emailColumn = new TableColumn<>("E-mail");
         TableColumn<Employee, Integer> ageColumn = new TableColumn<>("Возраст");
-
-        indexColumn.setCellValueFactory(column-> new ReadOnlyObjectWrapper<>(employeeTableView.getItems().indexOf(column.getValue()) + 1));
-        indexColumn.setSortable(false);
-        indexColumn.setResizable(false);
-        indexColumn.setMinWidth(30);
-        indexColumn.setMaxWidth(30);
 
         // Defines how to fill data for each cell.
         fioColumn.setCellValueFactory(new PropertyValueFactory<>("fio"));
@@ -103,7 +85,6 @@ public class Controller {
 
             TablePosition<Employee, String> position = event.getTablePosition();
             Employee employee = event.getTableView().getItems().get(position.getRow());
-
             String newFio = event.getNewValue();
             employee.setFio(newFio);
             try {
@@ -118,9 +99,7 @@ public class Controller {
         phoneColumn.setMinWidth(140);
         phoneColumn.setOnEditCommit((TableColumn.CellEditEvent<Employee, String> event) -> {
 
-            TablePosition<Employee, String> position = event.getTablePosition();
-            Employee employee = event.getTableView().getItems().get(position.getRow());
-
+            Employee employee = event.getTableView().getItems().get(event.getTablePosition().getRow());
             String newNumber = event.getNewValue();
             employee.setPhonenumber(newNumber);
             try {
@@ -135,9 +114,7 @@ public class Controller {
         emailColumn.setMinWidth(180);
         emailColumn.setOnEditCommit((TableColumn.CellEditEvent<Employee, String> event) -> {
 
-            TablePosition<Employee, String> position = event.getTablePosition();
-            Employee employee = event.getTableView().getItems().get(position.getRow());
-
+            Employee employee = event.getTableView().getItems().get(event.getTablePosition().getRow());
             String newEmail = event.getNewValue();
             employee.setEmail(newEmail);
             try {
@@ -152,43 +129,31 @@ public class Controller {
         ageColumn.setMinWidth(70);
         ageColumn.setOnEditCommit((TableColumn.CellEditEvent<Employee, Integer> event) -> {
 
-            TablePosition<Employee, Integer> position = event.getTablePosition();
-            Employee employee = event.getTableView().getItems().get(position.getRow());
-
+            Employee employee = event.getTableView().getItems().get(event.getTablePosition().getRow());
             try {
                 int newAge = event.getNewValue();
                 if (newAge < 14 || newAge > 100) throw new NumberFormatException();
                 employee.setAge(newAge);
                 DataBases.updateEmployee(employee);
             } catch (NumberFormatException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Ошибка");
-                alert.setHeaderText("Ошибка редактирования сотрудника");
-                alert.setContentText("Введено некорректное значение возраста сотрудника.");
+                Alert alert = Dialogs.getErrorAlert("Ошибка редактирования сотрудника", "Введено некорректное значение возраста сотрудника.");
                 alert.showAndWait();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         });
 
-        // Display row data
-        List<Employee> employeeList = DataBases.getEmployees();
-        ObservableList<Employee> observableList = FXCollections.observableList(employeeList);
-        employeeTableView.setItems(observableList);
-        employeeTableView.getColumns().addAll(indexColumn, fioColumn, phoneColumn, emailColumn, ageColumn);
-        employeeTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        employeeTableView.setItems(FXCollections.observableList(DataBases.getEmployees()));
+        employeeTableView.getColumns().addAll(getIndexColumn(employeeTableView), fioColumn, phoneColumn, emailColumn, ageColumn);
     }
 
     private void initializeEmployeeButtons() {
         addEmployeeButton.setOnAction(actionEvent -> {
-            Optional<Employee> result = getAddEmployeeDialog().showAndWait();
+            Optional<Employee> result = Dialogs.getAddEmployeeDialog().showAndWait();
             result.ifPresent(list -> {
                 try {
                     DataBases.addEmployee(result.get());
-
-                    List<Employee> employeeList = DataBases.getEmployees();
-                    ObservableList<Employee> observableList = FXCollections.observableList(employeeList);
-                    employeeTableView.setItems(observableList);
+                    employeeTableView.setItems(FXCollections.observableList(DataBases.getEmployees()));
 
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -199,22 +164,16 @@ public class Controller {
         deleteEmployeeButton.setOnAction(actionEvent -> {
             int row = employeeTableView.getSelectionModel().getSelectedIndex();
             if (row != -1) {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle("Подтверждение");
-                alert.setHeaderText("Удалить сотрудника?");
-                alert.setContentText("Сотрудник будет безвозвратно удалён.");
-
+                Alert alert = Dialogs.getConfirmationAlert("Удалить сотрудника?", "Сотрудник будет безвозвратно удалён.");
                 Optional<ButtonType> result = alert.showAndWait();
+
                 if (result.get() == ButtonType.OK) {
                     try {
                         DataBases.removeEmployee(employeeTableView.getItems().get(row).getId());
                         employeeTableView.getItems().remove(row);
                     } catch (SQLException e) {
                         if (e.getErrorCode() == 2292) {
-                            alert = new Alert(Alert.AlertType.ERROR);
-                            alert.setTitle("Ошибка");
-                            alert.setHeaderText("Ошибка удаления сотрудника");
-                            alert.setContentText("Невозможно удалить сотрудника, связанного с существующими резюме.");
+                            alert = Dialogs.getErrorAlert("Ошибка удаления сотрудника", "Невозможно удалить сотрудника, связанного с существующими резюме.");
                             alert.showAndWait();
                         } else e.printStackTrace();
                     }
@@ -223,74 +182,11 @@ public class Controller {
         });
     }
 
-    private Dialog<Employee> getAddEmployeeDialog() {
-        Dialog<Employee> dialog = new Dialog<>();
-        dialog.setTitle("Добавление сотрудника");
-        dialog.setHeaderText("Заполните информацию о сотруднике");
-
-        ButtonType confirmButton = new ButtonType("Добавить", ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelButton = new ButtonType("Отмена", ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().addAll(confirmButton, cancelButton);
-
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 100, 10, 10));
-
-        TextField fioField = new TextField();
-        TextField phoneField = new TextField();
-        TextField emailField = new TextField();
-        TextField ageField = new TextField();
-        fioField.setPromptText("ФИО");
-        phoneField.setPromptText("Номер телефона");
-        emailField.setPromptText("E-mail");
-        ageField.setPromptText("Возраст");
-
-        grid.add(new Label("ФИО:"), 0, 0);
-        grid.add(new Label("Телефон:"), 0, 1);
-        grid.add(new Label("E-mail:"), 0, 2);
-        grid.add(new Label("Возраст:"), 0, 3);
-        grid.add(fioField, 1, 0);
-        grid.add(phoneField, 1, 1);
-        grid.add(emailField, 1, 2);
-        grid.add(ageField, 1, 3);
-
-        Node loginButton = dialog.getDialogPane().lookupButton(confirmButton);
-        loginButton.setDisable(true);
-
-        fioField.textProperty().addListener((observable, oldValue, newValue) -> loginButton.setDisable(newValue.trim().isEmpty()));
-        dialog.getDialogPane().setContent(grid);
-
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == confirmButton) {
-                try {
-                    int age = Integer.parseInt(ageField.getText());
-                    if (age < 14 || age > 100) throw new NumberFormatException();
-                    return new Employee(-1, fioField.getText(), phoneField.getText(), emailField.getText(), age);
-                } catch (NumberFormatException e) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Ошибка");
-                    alert.setHeaderText("Ошибка добавления сотрудника");
-                    alert.setContentText("Введено некорректное значение возраста сотрудника.");
-                    alert.showAndWait();
-                    return null;
-                }
-            } else return null;
-        });
-        return dialog;
-    }
 
     @SuppressWarnings("unchecked")
     private void initializeEnterpriseTable() throws SQLException {
-        TableColumn<Enterprise, Integer> indexColumn = new TableColumn<>("№");
         TableColumn<Enterprise, String> nameColumn = new TableColumn<>("Название");
         TableColumn<Enterprise, String> phoneColumn = new TableColumn<>("Номер телефона");
-
-        indexColumn.setCellValueFactory(column-> new ReadOnlyObjectWrapper<>(enterpriseTableView.getItems().indexOf(column.getValue()) + 1));
-        indexColumn.setSortable(false);
-        indexColumn.setResizable(false);
-        indexColumn.setMinWidth(30);
-        indexColumn.setMaxWidth(30);
 
         // Defines how to fill data for each cell.
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -298,9 +194,7 @@ public class Controller {
         nameColumn.setMinWidth(200);
         nameColumn.setOnEditCommit((TableColumn.CellEditEvent<Enterprise, String> event) -> {
 
-            TablePosition<Enterprise, String> position = event.getTablePosition();
-            Enterprise enterprise = event.getTableView().getItems().get(position.getRow());
-
+            Enterprise enterprise = event.getTableView().getItems().get(event.getTablePosition().getRow());
             String newName = event.getNewValue();
             enterprise.setName(newName);
             try {
@@ -315,9 +209,7 @@ public class Controller {
         phoneColumn.setMinWidth(200);
         phoneColumn.setOnEditCommit((TableColumn.CellEditEvent<Enterprise, String> event) -> {
 
-            TablePosition<Enterprise, String> position = event.getTablePosition();
-            Enterprise enterprise = event.getTableView().getItems().get(position.getRow());
-
+            Enterprise enterprise = event.getTableView().getItems().get(event.getTablePosition().getRow());
             String newNumber = event.getNewValue();
             enterprise.setPhone(newNumber);
             try {
@@ -327,24 +219,17 @@ public class Controller {
             }
         });
 
-        // Display row data
-        List<Enterprise> enterpriseList = DataBases.getEnterprises();
-        ObservableList<Enterprise> observableList = FXCollections.observableList(enterpriseList);
-        enterpriseTableView.setItems(observableList);
-        enterpriseTableView.getColumns().addAll(indexColumn, nameColumn, phoneColumn);
-        enterpriseTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        enterpriseTableView.setItems(FXCollections.observableList(DataBases.getEnterprises()));
+        enterpriseTableView.getColumns().addAll(getIndexColumn(enterpriseTableView), nameColumn, phoneColumn);
     }
 
     private void initializeEnterpriseButtons() {
         addEnterpriseButton.setOnAction(actionEvent -> {
-            Optional<Enterprise> result = getAddEnterpriseDialog().showAndWait();
+            Optional<Enterprise> result = Dialogs.getAddEnterpriseDialog().showAndWait();
             result.ifPresent(list -> {
                 try {
                     DataBases.addEnterprise(result.get());
-
-                    List<Enterprise> enterpriseList = DataBases.getEnterprises();
-                    ObservableList<Enterprise> observableList = FXCollections.observableList(enterpriseList);
-                    enterpriseTableView.setItems(observableList);
+                    enterpriseTableView.setItems(FXCollections.observableList(DataBases.getEnterprises()));
 
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -355,22 +240,16 @@ public class Controller {
         deleteEnterpriseButton.setOnAction(actionEvent -> {
             int row = enterpriseTableView.getSelectionModel().getSelectedIndex();
             if (row != -1) {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle("Подтверждение");
-                alert.setHeaderText("Удалить предприятие?");
-                alert.setContentText("Предприятие будет безвозвратно удалено.");
-
+                Alert alert = Dialogs.getConfirmationAlert("Удалить предприятие?", "Предприятие будет безвозвратно удалено.");
                 Optional<ButtonType> result = alert.showAndWait();
+
                 if (result.get() == ButtonType.OK) {
                     try {
                         DataBases.removeEnterprise(enterpriseTableView.getItems().get(row).getId());
                         enterpriseTableView.getItems().remove(row);
                     } catch (SQLException e) {
                         if (e.getErrorCode() == 2292) {
-                            alert = new Alert(Alert.AlertType.ERROR);
-                            alert.setTitle("Ошибка");
-                            alert.setHeaderText("Ошибка удаления предприятия");
-                            alert.setContentText("Невозможно удалить предприятие, связанное с существующей вакансией.");
+                            alert = Dialogs.getErrorAlert("Ошибка удаления предприятия", "Невозможно удалить предприятие, связанное с существующей вакансией.");
                             alert.showAndWait();
                         } else e.printStackTrace();
                     }
@@ -379,63 +258,16 @@ public class Controller {
         });
     }
 
-    private Dialog<Enterprise> getAddEnterpriseDialog() {
-        Dialog<Enterprise> dialog = new Dialog<>();
-        dialog.setTitle("Добавление предприятия");
-        dialog.setHeaderText("Заполните информацию о предприятии");
-
-        ButtonType confirmButton = new ButtonType("Добавить", ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelButton = new ButtonType("Отмена", ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().addAll(confirmButton, cancelButton);
-
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 100, 10, 10));
-
-        TextField nameField = new TextField();
-        TextField phoneField = new TextField();
-        nameField.setPromptText("Название");
-        phoneField.setPromptText("Номер телефона");
-
-        grid.add(new Label("Название:"), 0, 0);
-        grid.add(new Label("Телефон:"), 0, 1);
-        grid.add(nameField, 1, 0);
-        grid.add(phoneField, 1, 1);
-        Node loginButton = dialog.getDialogPane().lookupButton(confirmButton);
-        loginButton.setDisable(true);
-
-        nameField.textProperty().addListener((observable, oldValue, newValue) -> loginButton.setDisable(newValue.trim().isEmpty()));
-        dialog.getDialogPane().setContent(grid);
-
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == confirmButton)
-                return new Enterprise(-1, nameField.getText(), phoneField.getText());
-            else return null;
-        });
-        return dialog;
-    }
-
     @SuppressWarnings("unchecked")
     private void initializeSpecialityTable() throws SQLException {
-        TableColumn<Speciality, Integer> indexColumn = new TableColumn<>("№");
         TableColumn<Speciality, String> nameColumn = new TableColumn<>("Название");
 
-        indexColumn.setCellValueFactory(column-> new ReadOnlyObjectWrapper<>(specialityTableView.getItems().indexOf(column.getValue()) + 1));
-        indexColumn.setSortable(false);
-        indexColumn.setResizable(false);
-        indexColumn.setMinWidth(30);
-        indexColumn.setMaxWidth(30);
-
-        // Defines how to fill data for each cell.
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         nameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         nameColumn.setMinWidth(200);
         nameColumn.setOnEditCommit((TableColumn.CellEditEvent<Speciality, String> event) -> {
 
-            TablePosition<Speciality, String> position = event.getTablePosition();
-            Speciality speciality = event.getTableView().getItems().get(position.getRow());
-
+            Speciality speciality = event.getTableView().getItems().get(event.getTablePosition().getRow());
             String newName = event.getNewValue();
             speciality.setName(newName);
             try {
@@ -445,23 +277,17 @@ public class Controller {
             }
         });
 
-        List<Speciality> specialityList = DataBases.getSpecialities();
-        ObservableList<Speciality> observableList = FXCollections.observableList(specialityList);
-        specialityTableView.setItems(observableList);
-        specialityTableView.getColumns().addAll(indexColumn, nameColumn);
-        specialityTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        specialityTableView.setItems(FXCollections.observableList(DataBases.getSpecialities()));
+        specialityTableView.getColumns().addAll(getIndexColumn(specialityTableView), nameColumn);
     }
 
     private void initializeSpecialityButtons() {
         addSpecialityButton.setOnAction(actionEvent -> {
-            Optional<Speciality> result = getAddSpecialityDialog().showAndWait();
+            Optional<Speciality> result = Dialogs.getAddSpecialityDialog().showAndWait();
             result.ifPresent(list -> {
                 try {
                     DataBases.addSpeciality(result.get());
-
-                    List<Speciality> enterpriseList = DataBases.getSpecialities();
-                    ObservableList<Speciality> observableList = FXCollections.observableList(enterpriseList);
-                    specialityTableView.setItems(observableList);
+                    specialityTableView.setItems(FXCollections.observableList(DataBases.getSpecialities()));
 
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -472,22 +298,16 @@ public class Controller {
         deleteSpecialityButton.setOnAction(actionEvent -> {
             int row = specialityTableView.getSelectionModel().getSelectedIndex();
             if (row != -1) {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle("Подтверждение");
-                alert.setHeaderText("Удалить специальность?");
-                alert.setContentText("Специальность будет безвозвратно удалена.");
-
+                Alert alert = Dialogs.getConfirmationAlert("Удалить специальность?", "Специальность будет безвозвратно удалена.");
                 Optional<ButtonType> result = alert.showAndWait();
+
                 if (result.get() == ButtonType.OK) {
                     try {
                         DataBases.removeSpeciality(specialityTableView.getItems().get(row).getId());
                         specialityTableView.getItems().remove(row);
                     } catch (SQLException e) {
                         if (e.getErrorCode() == 2292) {
-                            alert = new Alert(Alert.AlertType.ERROR);
-                            alert.setTitle("Ошибка");
-                            alert.setHeaderText("Ошибка удаления специальности");
-                            alert.setContentText("Невозможно удалить специальность, связанную с существующей вакансией.");
+                            alert = Dialogs.getErrorAlert("Ошибка удаления специальности", "Невозможно удалить специальность, связанную с существующей вакансией.");
                             alert.showAndWait();
                         } else e.printStackTrace();
                     }
@@ -496,53 +316,12 @@ public class Controller {
         });
     }
 
-    private Dialog<Speciality> getAddSpecialityDialog() {
-        Dialog<Speciality> dialog = new Dialog<>();
-        dialog.setTitle("Добавление специальности");
-        dialog.setHeaderText("Заполните информацию о специальности");
-
-        ButtonType confirmButton = new ButtonType("Добавить", ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelButton = new ButtonType("Отмена", ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().addAll(confirmButton, cancelButton);
-
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 100, 10, 10));
-
-        TextField nameField = new TextField();
-        nameField.setPromptText("Название");
-
-        grid.add(new Label("Название:"), 0, 0);
-        grid.add(nameField, 1, 0);
-        Node loginButton = dialog.getDialogPane().lookupButton(confirmButton);
-        loginButton.setDisable(true);
-
-        nameField.textProperty().addListener((observable, oldValue, newValue) -> loginButton.setDisable(newValue.trim().isEmpty()));
-        dialog.getDialogPane().setContent(grid);
-
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == confirmButton)
-                return new Speciality(-1, nameField.getText());
-            else return null;
-        });
-        return dialog;
-    }
-
-
     @SuppressWarnings("unchecked")
     private void initializeVacancyTable() throws SQLException {
-        TableColumn<Vacancy, Integer> indexColumn = new TableColumn<>("№");
         TableColumn<Vacancy, Enterprise> enterpriseColumn = new TableColumn<>("Предприятие");
         TableColumn<Vacancy, Speciality> specialityColumn = new TableColumn<>("Специальность");
         TableColumn<Vacancy, Integer> experienceColumn = new TableColumn<>("Требуемый опыт");
         TableColumn<Vacancy, Integer> salaryColumn = new TableColumn<>("Зарплата");
-
-        indexColumn.setCellValueFactory(column-> new ReadOnlyObjectWrapper<>(vacancyTableView.getItems().indexOf(column.getValue()) + 1));
-        indexColumn.setSortable(false);
-        indexColumn.setResizable(false);
-        indexColumn.setMinWidth(30);
-        indexColumn.setMaxWidth(30);
 
         enterpriseColumn.setCellValueFactory(param -> {
             try {
@@ -568,7 +347,6 @@ public class Controller {
         });
         enterpriseColumn.setMinWidth(130);
 
-
         specialityColumn.setCellValueFactory(param -> {
             try {
                 Speciality speciality = DataBases.getSpeciality(param.getValue().getSpecialityID());
@@ -593,74 +371,55 @@ public class Controller {
         });
         specialityColumn.setMinWidth(130);
 
-
         experienceColumn.setCellValueFactory(new PropertyValueFactory<>("experience"));
         experienceColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
         experienceColumn.setMinWidth(130);
         experienceColumn.setOnEditCommit((TableColumn.CellEditEvent<Vacancy, Integer> event) -> {
 
-            TablePosition<Vacancy, Integer> position = event.getTablePosition();
-            Vacancy vacancy = event.getTableView().getItems().get(position.getRow());
-
+            Vacancy vacancy = event.getTableView().getItems().get(event.getTablePosition().getRow());
             try {
                 int newExperience = event.getNewValue();
                 if (newExperience < 0 || newExperience > 50) throw new NumberFormatException();
                 vacancy.setExperience(newExperience);
                 DataBases.updateVacancy(vacancy);
             } catch (NumberFormatException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Ошибка");
-                alert.setHeaderText("Ошибка редактирования вакансии");
-                alert.setContentText("Введено некорректное значение требуемого опыта работы.");
+                Alert alert = Dialogs.getErrorAlert("Ошибка редактирования вакансии", "Введено некорректное значение требуемого опыта работы.");
                 alert.showAndWait();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         });
-
 
         salaryColumn.setCellValueFactory(new PropertyValueFactory<>("salary"));
         salaryColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
         salaryColumn.setMinWidth(80);
         salaryColumn.setOnEditCommit((TableColumn.CellEditEvent<Vacancy, Integer> event) -> {
 
-            TablePosition<Vacancy, Integer> position = event.getTablePosition();
-            Vacancy vacancy = event.getTableView().getItems().get(position.getRow());
-
+            Vacancy vacancy = event.getTableView().getItems().get(event.getTablePosition().getRow());
             try {
                 int newSalary = event.getNewValue();
                 if (newSalary < 0) throw new NumberFormatException();
                 vacancy.setSalary(newSalary);
                 DataBases.updateVacancy(vacancy);
             } catch (NumberFormatException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Ошибка");
-                alert.setHeaderText("Ошибка редактирования вакансии");
-                alert.setContentText("Введено некорректное значение заработной платы.");
+                Alert alert = Dialogs.getErrorAlert("Ошибка редактирования вакансии", "Введено некорректное значение заработной платы.");
                 alert.showAndWait();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         });
 
-        // Display row data
-        List<Vacancy> vacancyList = DataBases.getVacancies();
-        ObservableList<Vacancy> observableList = FXCollections.observableList(vacancyList);
-        vacancyTableView.setItems(observableList);
-        vacancyTableView.getColumns().addAll(indexColumn, enterpriseColumn, specialityColumn, experienceColumn, salaryColumn);
-        vacancyTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        vacancyTableView.setItems(FXCollections.observableList(DataBases.getVacancies()));
+        vacancyTableView.getColumns().addAll(getIndexColumn(vacancyTableView), enterpriseColumn, specialityColumn, experienceColumn, salaryColumn);
     }
 
     private void initializeVacancyButtons() {
         addVacancyButton.setOnAction(actionEvent -> {
-            Optional<Vacancy> result = getAddVacancyDialog().showAndWait();
+            Optional<Vacancy> result = Dialogs.getAddVacancyDialog().showAndWait();
             result.ifPresent(vacancy -> {
                 try {
                     DataBases.addVacancy(result.get());
-
-                    List<Vacancy> vacancyList = DataBases.getVacancies();
-                    ObservableList<Vacancy> observableList = FXCollections.observableList(vacancyList);
-                    vacancyTableView.setItems(observableList);
+                    vacancyTableView.setItems(FXCollections.observableList(DataBases.getVacancies()));
 
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -671,12 +430,9 @@ public class Controller {
         deleteVacancyButton.setOnAction(actionEvent -> {
             int row = vacancyTableView.getSelectionModel().getSelectedIndex();
             if (row != -1) {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle("Подтверждение");
-                alert.setHeaderText("Удалить вакансию?");
-                alert.setContentText("Вакансия будет безвозвратно удалена.");
-
+                Alert alert = Dialogs.getConfirmationAlert("Удалить вакансию?", "Вакансия будет безвозвратно удалена.");
                 Optional<ButtonType> result = alert.showAndWait();
+
                 if (result.get() == ButtonType.OK) {
                     try {
                         DataBases.removeVacancy(vacancyTableView.getItems().get(row).getId());
@@ -690,7 +446,142 @@ public class Controller {
         });
     }
 
-    private Dialog<Vacancy> getAddVacancyDialog() {
-        throw new NotImplementedException();
+    @SuppressWarnings("unchecked")
+    private void initializeResumeTable() throws SQLException {
+        TableColumn<Resume, Employee> employeeColumn = new TableColumn<>("Сотрудник");
+        TableColumn<Resume, Speciality> specialityColumn = new TableColumn<>("Специальность");
+        TableColumn<Resume, Integer> experienceColumn = new TableColumn<>("Опыт работы");
+        TableColumn<Resume, Date> dateColumn = new TableColumn<>("Дата создания");
+
+        employeeColumn.setCellValueFactory(param -> {
+            try {
+                Employee employee = DataBases.getEmployee(param.getValue().getEmployeeID());
+                return new SimpleObjectProperty<>(employee);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            }
+        });
+        employeeColumn.setCellFactory(ComboBoxTableCell.forTableColumn(employeeTableView.getItems()));
+
+        employeeColumn.setOnEditCommit((TableColumn.CellEditEvent<Resume, Employee> event) -> {
+            try {
+                int row = event.getTablePosition().getRow();
+                Employee newEmployee = event.getNewValue();
+                Resume resume = event.getTableView().getItems().get(row);
+                resume.setEmployeeID(newEmployee.getId());
+                DataBases.updateResume(resume);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+        employeeColumn.setMinWidth(250);
+
+        specialityColumn.setCellValueFactory(param -> {
+            try {
+                return new SimpleObjectProperty<>(DataBases.getSpeciality(param.getValue().getSpecialityID()));
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            }
+        });
+        specialityColumn.setCellFactory(ComboBoxTableCell.forTableColumn(specialityTableView.getItems()));
+
+        specialityColumn.setOnEditCommit((TableColumn.CellEditEvent<Resume, Speciality> event) -> {
+            try {
+                int row = event.getTablePosition().getRow();
+                Speciality newSpeciality = event.getNewValue();
+                Resume resume = event.getTableView().getItems().get(row);
+                resume.setSpecialityID(newSpeciality.getId());
+                DataBases.updateResume(resume);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+        specialityColumn.setMinWidth(130);
+
+        experienceColumn.setCellValueFactory(new PropertyValueFactory<>("experience"));
+        experienceColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        experienceColumn.setMinWidth(100);
+        experienceColumn.setOnEditCommit((TableColumn.CellEditEvent<Resume, Integer> event) -> {
+
+            Resume resume = event.getTableView().getItems().get(event.getTablePosition().getRow());
+            try {
+                int newExperience = event.getNewValue();
+                if (newExperience < 0 || newExperience > 60) throw new NumberFormatException();
+                resume.setExperience(newExperience);
+                DataBases.updateResume(resume);
+            } catch (NumberFormatException e) {
+                Alert alert = Dialogs.getErrorAlert("Ошибка редактирования резюме", "Введено некорректное значение опыта работы.");
+                alert.showAndWait();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+
+        dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
+        dateColumn.setCellFactory(TextFieldTableCell.forTableColumn(new DateStringConverter()));
+        dateColumn.setMinWidth(110);
+        dateColumn.setOnEditCommit((TableColumn.CellEditEvent<Resume, Date> event) -> {
+
+            Resume resume = event.getTableView().getItems().get(event.getTablePosition().getRow());
+            try {
+                Date newDate = event.getNewValue();
+                if (newDate.after(new Date())) throw new ParseException("", 0);
+                resume.setDate(newDate);
+                DataBases.updateResume(resume);
+            } catch (ParseException e) {
+                Alert alert = Dialogs.getErrorAlert("Ошибка редактирования резюме", "Введена некорректная дата создания резюме.");
+                alert.showAndWait();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+
+        resumeTableView.setItems(FXCollections.observableList(DataBases.getResumes()));
+        resumeTableView.getColumns().addAll(getIndexColumn(resumeTableView), employeeColumn, specialityColumn, experienceColumn, dateColumn);
+    }
+
+    private void initializeResumeButtons() {
+        addResumeButton.setOnAction(actionEvent -> {
+            Optional<Resume> result = Dialogs.getAddResumeDialog().showAndWait();
+            result.ifPresent(resume -> {
+                try {
+                    DataBases.addResume(result.get());
+                    resumeTableView.setItems(FXCollections.observableList(DataBases.getResumes()));
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            });
+        });
+
+        deleteResumeButton.setOnAction(actionEvent -> {
+            int row = resumeTableView.getSelectionModel().getSelectedIndex();
+            if (row != -1) {
+                Alert alert = Dialogs.getConfirmationAlert("Удалить резюме?", "Резюме будет безвозвратно удалено.");
+                Optional<ButtonType> result = alert.showAndWait();
+
+                if (result.get() == ButtonType.OK) {
+                    try {
+                        DataBases.removeResume(resumeTableView.getItems().get(row).getId());
+                        resumeTableView.getItems().remove(row);
+
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
+    private <T> TableColumn<T, Integer> getIndexColumn(TableView table) {
+        TableColumn<T, Integer> indexColumn = new TableColumn<>("№");
+        indexColumn.setCellValueFactory(column -> new ReadOnlyObjectWrapper<>(table.getItems().indexOf(column.getValue()) + 1));
+        indexColumn.setSortable(false);
+        indexColumn.setResizable(false);
+        indexColumn.setMinWidth(30);
+        indexColumn.setMaxWidth(30);
+        return indexColumn;
     }
 }

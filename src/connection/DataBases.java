@@ -1,9 +1,6 @@
 package connection;
 
-import beans.Employee;
-import beans.Enterprise;
-import beans.Speciality;
-import beans.Vacancy;
+import beans.*;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -42,6 +39,23 @@ public class DataBases {
         statement.close();
         resultSet.close();
         return employees;
+    }
+
+    public static Employee getEmployee(int id) throws SQLException {
+        PreparedStatement statement = getConnection().prepareStatement("SELECT * FROM EMPLOYEE WHERE ID = ?");
+        statement.setInt(1, id);
+        ResultSet resultSet = statement.executeQuery();
+        resultSet.next();
+        Employee employee = new Employee(
+                resultSet.getInt("ID"),
+                resultSet.getString("FIO"),
+                resultSet.getString("PHONE"),
+                resultSet.getString("EMAIL"),
+                resultSet.getInt("AGE")
+        );
+        statement.close();
+        resultSet.close();
+        return employee;
     }
 
     public static void updateEmployee(Employee employee) throws SQLException {
@@ -226,4 +240,52 @@ public class DataBases {
         statement.execute();
         statement.close();
     }
+
+
+    public static List<Resume> getResumes() throws SQLException {
+        List<Resume> resumes = new ArrayList<>();
+        Statement statement = getConnection().createStatement();
+        ResultSet resultSet = statement.executeQuery("SELECT * FROM RESUME");
+        while (resultSet.next()) {
+            resumes.add(new Resume(
+                    resultSet.getInt("ID"),
+                    resultSet.getInt("EMPLOYEE_ID"),
+                    resultSet.getInt("SPECIALITY_ID"),
+                    resultSet.getInt("EXPERIENCE"),
+                    resultSet.getDate("DATA")
+            ));
+        }
+        statement.close();
+        resultSet.close();
+        return resumes;
+    }
+
+    public static void updateResume(Resume resume) throws SQLException {
+        PreparedStatement statement = getConnection().prepareStatement("UPDATE RESUME SET EMPLOYEE_ID = ?, SPECIALITY_ID = ?, EXPERIENCE = ?, DATA = ? WHERE ID = ?");
+        statement.setInt(1, resume.getEmployeeID());
+        statement.setInt(2, resume.getSpecialityID());
+        statement.setInt(3, resume.getExperience());
+        statement.setDate(4, new Date(resume.getDate().getTime()));
+        statement.setInt(5, resume.getId());
+        statement.executeUpdate();
+        statement.close();
+    }
+
+    public static void addResume(Resume resume) throws SQLException {
+        PreparedStatement statement = getConnection().prepareStatement("INSERT INTO RESUME VALUES (RESUME_ID_SEQ.NEXTVAL, ?, ?, ?, ?)");
+        statement.setInt(1, resume.getEmployeeID());
+        statement.setInt(2, resume.getSpecialityID());
+        statement.setInt(3, resume.getExperience());
+        statement.setDate(4, new Date(resume.getDate().getTime()));
+        statement.execute();
+        statement.close();
+    }
+
+    public static void removeResume(int id) throws SQLException {
+        PreparedStatement statement = getConnection().prepareStatement("DELETE FROM RESUME WHERE ID = ?");
+        statement.setInt(1, id);
+        statement.execute();
+        statement.close();
+    }
+
 }

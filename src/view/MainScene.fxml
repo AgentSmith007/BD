@@ -10,35 +10,50 @@
     <TabPane prefHeight="474.0" prefWidth="712.0" tabClosingPolicy="UNAVAILABLE">
         <Tab text="Сотрудники">
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="443.0" prefWidth="712.0">
-                <TableView fx:id="employeeTableView" editable="true" prefHeight="410.0" prefWidth="712.0" />
+                <TableView fx:id="employeeTableView" editable="true" prefHeight="410.0" prefWidth="712.0">
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy></TableView>
                 <Button fx:id="addEmployeeButton" layoutX="14.0" layoutY="420.0" mnemonicParsing="false" text="Добавить сотрудника" />
                 <Button fx:id="deleteEmployeeButton" layoutX="160.0" layoutY="420.0" mnemonicParsing="false" text="Удалить сотрудника" />
             </AnchorPane>
         </Tab>
         <Tab text="Предприятия">
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="443.0" prefWidth="712.0">
-                <TableView fx:id="enterpriseTableView" editable="true" prefHeight="410.0" prefWidth="712.0" />
+                <TableView fx:id="enterpriseTableView" editable="true" prefHeight="410.0" prefWidth="712.0">
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy></TableView>
                 <Button fx:id="addEnterpriseButton" layoutX="14.0" layoutY="420.0" mnemonicParsing="false" text="Добавить предприятие" />
                 <Button fx:id="deleteEnterpriseButton" layoutX="169.0" layoutY="420.0" mnemonicParsing="false" text="Удалить предприятие" />
             </AnchorPane>
         </Tab>
         <Tab text="Специальности">
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="443.0" prefWidth="712.0">
-                <TableView fx:id="specialityTableView" editable="true" prefHeight="410.0" prefWidth="712.0" />
+                <TableView fx:id="specialityTableView" editable="true" prefHeight="410.0" prefWidth="712.0">
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy></TableView>
                 <Button fx:id="addSpecialityButton" layoutX="14.0" layoutY="420.0" mnemonicParsing="false" text="Добавить специальность" />
                 <Button fx:id="deleteSpecialityButton" layoutX="178.0" layoutY="420.0" mnemonicParsing="false" text="Удалить специальность" />
             </AnchorPane>
         </Tab>
         <Tab text="Вакансии">
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="443.0" prefWidth="712.0">
-                <TableView fx:id="vacancyTableView" editable="true" prefHeight="410.0" prefWidth="712.0" />
+                <TableView fx:id="vacancyTableView" editable="true" prefHeight="410.0" prefWidth="712.0">
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy></TableView>
                 <Button fx:id="addVacancyButton" layoutX="14.0" layoutY="420.0" mnemonicParsing="false" text="Добавить вакансию" />
                 <Button fx:id="deleteVacancyButton" layoutX="151.0" layoutY="420.0" mnemonicParsing="false" text="Удалить вакансию" />
             </AnchorPane>
         </Tab>
         <Tab text="Резюме">
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="443.0" prefWidth="712.0">
-                <TableView fx:id="resumeTableView" editable="true" prefHeight="410.0" prefWidth="712.0" />
+                <TableView fx:id="resumeTableView" editable="true" prefHeight="410.0" prefWidth="712.0">
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy></TableView>
                 <Button fx:id="addResumeButton" layoutX="14.0" layoutY="420.0" mnemonicParsing="false" text="Добавить резюме" />
                 <Button fx:id="deleteResumeButton" layoutX="140.0" layoutY="420.0" mnemonicParsing="false" text="Удалить резюме" />
             </AnchorPane>

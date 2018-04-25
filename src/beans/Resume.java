@@ -5,13 +5,15 @@ import java.util.Date;
 public class Resume {
     private int specialityID;
     private int employeeID;
-    private int resumeID;
+    private int id;
+    private int experience;
     private Date date;
 
-    public Resume(int resumeID, int employeeID, int specialityID, Date date) {
+    public Resume(int id, int employeeID, int specialityID, int experience, Date date) {
         this.specialityID = specialityID;
         this.employeeID = employeeID;
-        this.resumeID = resumeID;
+        this.id = id;
+        this.experience = experience;
         this.date = date;
     }
 
@@ -31,12 +33,12 @@ public class Resume {
         this.employeeID = employeeID;
     }
 
-    public int getResumeID() {
-        return resumeID;
+    public int getId() {
+        return id;
     }
 
-    public void setResumeID(int resumeID) {
-        this.resumeID = resumeID;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public Date getDate() {
@@ -45,5 +47,13 @@ public class Resume {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public int getExperience() {
+        return experience;
+    }
+
+    public void setExperience(int experience) {
+        this.experience = experience;
     }
 }

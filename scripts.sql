@@ -22,6 +22,7 @@ CREATE TABLE resume (
   id            NUMBER NOT NULL,
   employee_id   NUMBER NOT NULL,
   speciality_id NUMBER NOT NULL,
+  experience    NUMBER,
   data          DATE
 );
 
@@ -134,13 +135,13 @@ INSERT INTO enterprise VALUES (
 
 INSERT INTO enterprise VALUES (
   ENTERPRISE_ID_SEQ.NEXTVAL,
-  'Sberbank',
+  'Сбербанк',
   '8462256328'
 );
 
 INSERT INTO enterprise VALUES (
   ENTERPRISE_ID_SEQ.NEXTVAL,
-  'VTB-24',
+  'ВТБ-24',
   '8462543328'
 );
 
@@ -165,37 +166,37 @@ INSERT INTO enterprise VALUES (
 INSERT INTO enterprise VALUES (
   ENTERPRISE_ID_SEQ.NEXTVAL,
   'Apple',
-  '88888888888'
+  '+1 (301) 101-1030'
 );
 
 INSERT INTO enterprise VALUES (
   ENTERPRISE_ID_SEQ.NEXTVAL,
-  'Apple',
-  '89223121444'
+  'NetCracker',
+  '312-14-44'
 );
 
 INSERT INTO enterprise VALUES (
   ENTERPRISE_ID_SEQ.NEXTVAL,
-  'Apple',
+  'EPAM',
   '89993111223'
 );
 
 INSERT INTO enterprise VALUES (
   ENTERPRISE_ID_SEQ.NEXTVAL,
-  'Apple',
+  'CQG',
   '89911233212'
 );
 
 INSERT INTO enterprise VALUES (
   ENTERPRISE_ID_SEQ.NEXTVAL,
-  'Apple',
+  'Открытый код',
   '89273353324'
 );
 
 INSERT INTO enterprise VALUES (
   ENTERPRISE_ID_SEQ.NEXTVAL,
-  'Apple',
-  '89973332244'
+  'Google',
+  '+1 (650) 253-0000'
 );
 
 INSERT INTO employee VALUES (
@@ -224,9 +225,9 @@ INSERT INTO employee VALUES (
 
 INSERT INTO employee VALUES (
   EMPLOYEE_ID_SEQ.NEXTVAL,
-  'Голов Максим Юрьевич',
-  '87656543211',
-  'golov@gmail.com',
+  'Голов Максим Евгеньевич',
+  '+7 (927) 700-45-91',
+  'afterfocus@icloud.com',
   21
 );
 
@@ -372,20 +373,23 @@ INSERT INTO resume VALUES (
   RESUME_ID_SEQ.NEXTVAL,
   1,
   1,
+  1,
   '12-07-17'
 );
 
 INSERT INTO resume VALUES (
   RESUME_ID_SEQ.NEXTVAL,
-  1,
+  10,
   2,
+  3,
   '12-06-17'
 );
 
 INSERT INTO resume VALUES (
   RESUME_ID_SEQ.NEXTVAL,
-  1,
+  5,
   3,
+  0,
   '12-08-17'
 );
 
@@ -393,6 +397,7 @@ INSERT INTO resume VALUES (
   RESUME_ID_SEQ.NEXTVAL,
   3,
   4,
+  10,
   '22-12-17'
 );
 
@@ -400,6 +405,7 @@ INSERT INTO resume VALUES (
   RESUME_ID_SEQ.NEXTVAL,
   4,
   5,
+  3,
   '12-07-17'
 );
 
@@ -407,6 +413,7 @@ INSERT INTO resume VALUES (
   RESUME_ID_SEQ.NEXTVAL,
   5,
   6,
+  4,
   '10-05-17'
 );
 
@@ -414,6 +421,7 @@ INSERT INTO resume VALUES (
   RESUME_ID_SEQ.NEXTVAL,
   6,
   7,
+  2,
   '12-06-17'
 );
 
@@ -421,6 +429,7 @@ INSERT INTO resume VALUES (
   RESUME_ID_SEQ.NEXTVAL,
   7,
   8,
+  15,
   '11-07-17'
 );
 
@@ -428,6 +437,7 @@ INSERT INTO resume VALUES (
   RESUME_ID_SEQ.NEXTVAL,
   8,
   9,
+  1,
   '11-07-17'
 );
 
@@ -435,6 +445,7 @@ INSERT INTO resume VALUES (
   RESUME_ID_SEQ.NEXTVAL,
   9,
   10,
+  0,
   '11-07-17'
 );
 
@@ -442,7 +453,7 @@ INSERT INTO vacancy VALUES (
   VACANCY_ID_SEQ.NEXTVAL,
   1,
   50000,
-  2,
+  1,
   1
 );
 
@@ -450,7 +461,7 @@ INSERT INTO vacancy VALUES (
   VACANCY_ID_SEQ.NEXTVAL,
   2,
   40000,
-  2,
+  3,
   6
 );
 
@@ -458,7 +469,7 @@ INSERT INTO vacancy VALUES (
   VACANCY_ID_SEQ.NEXTVAL,
   3,
   60000,
-  3,
+  1,
   1
 );
 
@@ -466,7 +477,7 @@ INSERT INTO vacancy VALUES (
   VACANCY_ID_SEQ.NEXTVAL,
   4,
   70000,
-  2,
+  5,
   1
 );
 
@@ -482,7 +493,7 @@ INSERT INTO vacancy VALUES (
   VACANCY_ID_SEQ.NEXTVAL,
   6,
   30000,
-  2,
+  1,
   1
 );
 
@@ -490,7 +501,7 @@ INSERT INTO vacancy VALUES (
   VACANCY_ID_SEQ.NEXTVAL,
   7,
   20000,
-  2,
+  0,
   6
 );
 
@@ -498,7 +509,7 @@ INSERT INTO vacancy VALUES (
   VACANCY_ID_SEQ.NEXTVAL,
   8,
   55000,
-  2,
+  3,
   4
 );
 
@@ -506,7 +517,7 @@ INSERT INTO vacancy VALUES (
   VACANCY_ID_SEQ.NEXTVAL,
   9,
   58000,
-  2,
+  5,
   1
 );
 
@@ -514,7 +525,7 @@ INSERT INTO vacancy VALUES (
   VACANCY_ID_SEQ.NEXTVAL,
   10,
   58000,
-  2,
+  5,
   1
 );
 
@@ -522,7 +533,7 @@ INSERT INTO vacancy VALUES (
   VACANCY_ID_SEQ.NEXTVAL,
   11,
   19000,
-  2,
+  1,
   1
 );
 
@@ -530,7 +541,7 @@ INSERT INTO vacancy VALUES (
   VACANCY_ID_SEQ.NEXTVAL,
   12,
   48000,
-  2,
+  3,
   1
 );
 
@@ -538,7 +549,7 @@ INSERT INTO vacancy VALUES (
   VACANCY_ID_SEQ.NEXTVAL,
   13,
   8000,
-  2,
+  0,
   3
 );
 
@@ -546,7 +557,7 @@ INSERT INTO vacancy VALUES (
   VACANCY_ID_SEQ.NEXTVAL,
   14,
   90000,
-  2,
+  8,
   1
 );
 COMMIT;
