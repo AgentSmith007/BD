@@ -30,6 +30,10 @@ public class Controller {
     @FXML
     private TableView<Resume> resumeTableView;
     @FXML
+    private TableView<VacancyStats> vacancyStatsTableView;
+    @FXML
+    private TableView<ResumeStats> resumeStatsTableView;
+    @FXML
     private Button addEmployeeButton;
     @FXML
     private Button deleteEmployeeButton;
@@ -62,7 +66,8 @@ public class Controller {
             initializeVacancyButtons();
             initializeResumeTable();
             initializeResumeButtons();
-
+            initializeResumeStatsTable();
+            initializeVacancyStatsTable();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -162,18 +167,17 @@ public class Controller {
         deleteEmployeeButton.setOnAction(actionEvent -> {
             int row = employeeTableView.getSelectionModel().getSelectedIndex();
             if (row != -1) {
-                Alert alert = Dialogs.getConfirmationAlert("Удалить сотрудника?", "Сотрудник будет безвозвратно удалён.");
+                Alert alert = Dialogs.getConfirmationAlert("Удалить сотрудника?", "Сотрудник и все его резюме будут безвозвратно удалены.");
                 Optional<ButtonType> result = alert.showAndWait();
 
                 if (result.get() == ButtonType.OK) {
                     try {
                         DataBases.removeEmployee(employeeTableView.getItems().get(row).getId());
                         employeeTableView.getItems().remove(row);
+                        resumeTableView.setItems(FXCollections.observableList(DataBases.getResumes()));
+                        resumeStatsTableView.setItems(FXCollections.observableList(DataBases.getResumeStats()));
                     } catch (SQLException e) {
-                        if (e.getErrorCode() == 2292) {
-                            alert = Dialogs.getErrorAlert("Ошибка удаления сотрудника", "Невозможно удалить сотрудника, связанного с существующими резюме.");
-                            alert.showAndWait();
-                        } else e.printStackTrace();
+                        e.printStackTrace();
                     }
                 }
             }
@@ -238,18 +242,17 @@ public class Controller {
         deleteEnterpriseButton.setOnAction(actionEvent -> {
             int row = enterpriseTableView.getSelectionModel().getSelectedIndex();
             if (row != -1) {
-                Alert alert = Dialogs.getConfirmationAlert("Удалить предприятие?", "Предприятие будет безвозвратно удалено.");
+                Alert alert = Dialogs.getConfirmationAlert("Удалить предприятие?", "Предприятие и все его вакансии будут безвозвратно удалены.");
                 Optional<ButtonType> result = alert.showAndWait();
 
                 if (result.get() == ButtonType.OK) {
                     try {
                         DataBases.removeEnterprise(enterpriseTableView.getItems().get(row).getId());
                         enterpriseTableView.getItems().remove(row);
+                        vacancyTableView.setItems(FXCollections.observableList(DataBases.getVacancies()));
+                        vacancyStatsTableView.setItems(FXCollections.observableList(DataBases.getVacancyStats()));
                     } catch (SQLException e) {
-                        if (e.getErrorCode() == 2292) {
-                            alert = Dialogs.getErrorAlert("Ошибка удаления предприятия", "Невозможно удалить предприятие, связанное с существующей вакансией.");
-                            alert.showAndWait();
-                        } else e.printStackTrace();
+                        e.printStackTrace();
                     }
                 }
             }
@@ -303,6 +306,10 @@ public class Controller {
                     try {
                         DataBases.removeSpeciality(specialityTableView.getItems().get(row).getId());
                         specialityTableView.getItems().remove(row);
+                        vacancyTableView.setItems(FXCollections.observableList(DataBases.getVacancies()));
+                        resumeTableView.setItems(FXCollections.observableList(DataBases.getResumes()));
+                        resumeStatsTableView.setItems(FXCollections.observableList(DataBases.getResumeStats()));
+                        vacancyStatsTableView.setItems(FXCollections.observableList(DataBases.getVacancyStats()));
                     } catch (SQLException e) {
                         if (e.getErrorCode() == 2292) {
                             alert = Dialogs.getErrorAlert("Ошибка удаления специальности", "Невозможно удалить специальность, связанную с существующей вакансией.");
@@ -434,7 +441,7 @@ public class Controller {
                     try {
                         DataBases.removeVacancy(vacancyTableView.getItems().get(row).getId());
                         vacancyTableView.getItems().remove(row);
-
+                        vacancyStatsTableView.setItems(FXCollections.observableList(DataBases.getVacancyStats()));
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
@@ -563,13 +570,52 @@ public class Controller {
                     try {
                         DataBases.removeResume(resumeTableView.getItems().get(row).getId());
                         resumeTableView.getItems().remove(row);
-
+                        resumeStatsTableView.setItems(FXCollections.observableList(DataBases.getResumeStats()));
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
                 }
             }
         });
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initializeResumeStatsTable() throws SQLException {
+        TableColumn<ResumeStats, String> specialityColumn = new TableColumn<>("Специальность");
+        TableColumn<ResumeStats, Integer> numberResumesColumn = new TableColumn<>("Количество резюме");
+
+        specialityColumn.setCellValueFactory(new PropertyValueFactory<>("speciality"));
+        specialityColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        specialityColumn.setMinWidth(150);
+
+        numberResumesColumn.setCellValueFactory(new PropertyValueFactory<>("numberOfResumes"));
+        numberResumesColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        numberResumesColumn.setMinWidth(150);
+
+        resumeStatsTableView.setItems(FXCollections.observableList(DataBases.getResumeStats()));
+        resumeStatsTableView.getColumns().addAll(getIndexColumn(resumeStatsTableView), specialityColumn, numberResumesColumn);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initializeVacancyStatsTable() throws SQLException {
+        TableColumn<VacancyStats, String> specialityColumn = new TableColumn<>("Специальность");
+        TableColumn<VacancyStats, Integer> numberResumesColumn = new TableColumn<>("Количество вакансий");
+        TableColumn<VacancyStats, Integer> averageSalaryColumn = new TableColumn<>("Средняя зарплата");
+
+        specialityColumn.setCellValueFactory(new PropertyValueFactory<>("speciality"));
+        specialityColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        specialityColumn.setMinWidth(150);
+
+        numberResumesColumn.setCellValueFactory(new PropertyValueFactory<>("numberOfVacancies"));
+        numberResumesColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        numberResumesColumn.setMinWidth(150);
+
+        averageSalaryColumn.setCellValueFactory(new PropertyValueFactory<>("averageSalary"));
+        averageSalaryColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        averageSalaryColumn.setMinWidth(150);
+
+        vacancyStatsTableView.setItems(FXCollections.observableList(DataBases.getVacancyStats()));
+        vacancyStatsTableView.getColumns().addAll(getIndexColumn(vacancyStatsTableView), specialityColumn, numberResumesColumn, averageSalaryColumn);
     }
 
     private <T> TableColumn<T, Integer> getIndexColumn(TableView table) {

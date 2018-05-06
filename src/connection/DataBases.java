@@ -161,16 +161,17 @@ public class DataBases {
         PreparedStatement statement = getConnection().prepareStatement("SELECT * FROM SPECIALITY WHERE ID = ?");
         statement.setInt(1, id);
         ResultSet resultSet = statement.executeQuery();
-        resultSet.next();
+        if (resultSet.next()) {
 
-        Speciality speciality = new Speciality(
-                resultSet.getInt("ID"),
-                resultSet.getString("NAME")
-        );
+            Speciality speciality = new Speciality(
+                    resultSet.getInt("ID"),
+                    resultSet.getString("NAME")
+            );
 
-        statement.close();
-        resultSet.close();
-        return speciality;
+            statement.close();
+            resultSet.close();
+            return speciality;
+        } else return null;
     }
 
     public static void updateSpeciality(Speciality speciality) throws SQLException {
@@ -288,4 +289,46 @@ public class DataBases {
         statement.close();
     }
 
+    public static List<ResumeStats> getResumeStats() throws SQLException {
+        List<ResumeStats> statsList = new ArrayList<>();
+
+        Statement statement = getConnection().createStatement();
+        ResultSet resultSet = statement.executeQuery(
+                "SELECT speciality.name, count(resume.speciality_id) " +
+                        "FROM resume " +
+                        "INNER JOIN SPECIALITY ON resume.speciality_id = speciality.id " +
+                        "GROUP BY speciality.name, resume.speciality_id");
+
+        while (resultSet.next()) {
+            statsList.add(new ResumeStats(
+                    resultSet.getString(1),
+                    resultSet.getInt(2)
+            ));
+        }
+        statement.close();
+        resultSet.close();
+        return statsList;
+    }
+
+    public static List<VacancyStats> getVacancyStats() throws SQLException {
+        List<VacancyStats> statsList = new ArrayList<>();
+
+        Statement statement = getConnection().createStatement();
+        ResultSet resultSet = statement.executeQuery(
+                "SELECT speciality.name, COUNT(vacancy.speciality_id), AVG(vacancy.salary) " +
+                        "FROM vacancy " +
+                        "INNER JOIN speciality ON vacancy.speciality_id = speciality.id " +
+                        "GROUP BY speciality.name, vacancy.speciality_id");
+
+        while (resultSet.next()) {
+            statsList.add(new VacancyStats(
+                    resultSet.getString(1),
+                    resultSet.getInt(2),
+                    Math.round(resultSet.getFloat(3))
+            ));
+        }
+        statement.close();
+        resultSet.close();
+        return statsList;
+    }
 }
